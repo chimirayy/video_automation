@@ -8,7 +8,7 @@
 :root{--paper:#f2f3f0;--panel:#fff;--ink:#17202a;--mut:#667085;--line:#d8dbd3;--acc:#2f4bff;--acc-s:#e6eaff;--ok:#0f9d6b;--warn:#c77700;--bad:#d92d3a;--r:10px}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 "Avenir Next","Segoe UI Variable","Segoe UI",system-ui,sans-serif}
-.wrap{max-width:1080px;margin:0 auto;padding:48px 20px 80px}
+.wrap{max-width:1240px;margin:0 auto;padding:48px 20px 80px}
 h1{font-size:clamp(34px,6vw,60px);line-height:1;letter-spacing:-.04em;font-weight:800;margin:0 0 12px}
 .lead{color:var(--mut);max-width:56ch;margin:0 0 40px;font-size:17px}
 section{display:grid;grid-template-columns:72px 1fr;gap:0 20px;padding:32px 0;border-top:1.5px solid var(--ink)}
@@ -59,7 +59,7 @@ textarea{resize:vertical;min-height:64px}
 .empty{grid-column:1/-1;color:var(--mut);padding:18px 0}
 .cols{display:grid;grid-template-columns:3fr 2fr;gap:28px}
 .rows{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:14px}
-.rh,.blk{display:grid;grid-template-columns:30px 84px 84px minmax(0,1fr) 108px;gap:8px;align-items:center;padding:5px 8px}
+.rh,.blk{display:grid;grid-template-columns:26px 70px 70px minmax(0,1fr) 36px 80px 60px 96px;gap:8px;align-items:center;padding:5px 8px}
 .rh{background:var(--ink);color:#fff;font-size:12px;font-weight:600;padding:7px 8px}
 .blk{background:var(--panel)}
 .blk:nth-child(even){background:#e9ecf7}
@@ -68,9 +68,11 @@ textarea{resize:vertical;min-height:64px}
 .blk input,.blk textarea{margin:0;padding:5px 8px;background:#fff}
 .blk textarea{min-height:0;height:32px;resize:none;overflow:hidden;line-height:1.35}
 .blk.bad input[data-f=end]{border-color:var(--bad);background:#fde8ea}
+.blk input[type=color]{padding:2px;height:32px;cursor:pointer}
+.blk select{margin:0;width:100%;height:32px;padding:0 4px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font:inherit;font-size:13px}
 .blk .row{gap:3px}.blk .ib{padding:5px 0}
 .rows p{margin:0;padding:14px 12px}
-@media(max-width:640px){.rh,.blk{grid-template-columns:26px 68px 68px minmax(0,1fr)}.rh span:last-child{display:none}.blk .row{grid-column:1/-1}}
+@media(max-width:640px){.rh{display:none}.blk{grid-template-columns:30px 1fr 1fr 1fr}.blk textarea{grid-column:1/-1;order:5}.blk input[type=color],.blk select,.blk input[data-f=fs],.blk .row{order:6}}
 table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
 th{text-align:left;color:var(--mut);font-weight:600;border-bottom:1.5px solid var(--ink);padding:6px 8px 6px 0}
 td{padding:6px 8px 6px 0;border-bottom:1px solid var(--line);vertical-align:top}
@@ -86,7 +88,7 @@ details{margin-top:14px}summary{cursor:pointer;color:var(--mut);font-weight:600}
 .rt .sh{flex:none;width:40px;height:40px;display:flex;align-items:center;justify-content:center}
 .rt .sh i{display:block;border:2px solid var(--ink);border-radius:3px;background:var(--panel)}
 .rt small{display:block;color:var(--mut);font-weight:400;font-size:12px;line-height:1.35}
-.split{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:start}
+.split{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:24px;align-items:start}
 @media(max-width:900px){.split{grid-template-columns:1fr}.panel{position:static!important}}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px 12px;position:sticky;top:12px;max-height:80vh;overflow:auto}
 .pt{font-weight:700;font-size:13px;margin-bottom:8px}
@@ -133,7 +135,7 @@ details{margin-top:14px}summary{cursor:pointer;color:var(--mut);font-weight:600}
 <button class="btn" id="evensub">Split evenly</button>
 <button class="btn ghost" id="clrsub">Clear all blocks</button>
 </div>
-<div class="split"><div class="rows"><div class="rh"><span>#</span><span>Start (s)</span><span>End (s)</span><span>Subtitle text</span><span></span></div><div id="subs"></div></div><aside class="panel"><div class="pt">Subtitle timeline</div><div id="gs"></div></aside></div>
+<div class="split"><div class="rows"><div class="rh"><span>#</span><span>Start (s)</span><span>End (s)</span><span>Subtitle text</span><span>Color</span><span>Position</span><span>Size</span><span></span></div><div id="subs"></div></div><aside class="panel"><div class="pt">Subtitle timeline</div><div id="gs"></div></aside></div>
 <details><summary>Font settings</summary>
 <div class="bar" style="margin-top:10px">
 <label>Font family<input id="font" value="Noto Sans Devanagari"></label>
@@ -240,14 +242,14 @@ function splitSubs(){
   const it=S.imgs.reduce((a,m)=>a+m.dur,0),T=Math.min(600,S.audio.dur>0?S.audio.dur:it>0?it:n*5),b=i=>Math.round(T*i/n*10)/10;
   S.subs.forEach((x,i)=>{x.start=b(i);x.end=b(i+1)});
 }
-const swapTxt=(i,j)=>{const t=S.subs[i].text;S.subs[i].text=S.subs[j].text;S.subs[j].text=t};
-$('#addsub').onclick=()=>{S.subs.push({id:S.id++,start:0,end:0,text:''});splitSubs();renderSubs()};
+const swapTxt=(i,j)=>['text','color','pos','fs'].forEach(k=>{const t=S.subs[i][k];S.subs[i][k]=S.subs[j][k];S.subs[j][k]=t});
+$('#addsub').onclick=()=>{S.subs.push({id:S.id++,start:0,end:0,text:'',color:'#ffffff',pos:'2',fs:0});splitSubs();renderSubs()};
 $('#evensub').onclick=()=>{splitSubs();renderSubs()};
 $('#clrsub').onclick=()=>{S.subs=[];renderSubs()};
 $('#subs').addEventListener('input',e=>{
   const b=e.target.closest('.blk'),f=e.target.dataset.f;if(!b||!f)return;
   const s=S.subs.find(x=>x.id==b.dataset.id);
-  s[f]=f==='text'?e.target.value:(parseFloat(e.target.value)||0);
+  s[f]=(f==='text'||f==='pos'||f==='color')?e.target.value:(parseFloat(e.target.value)||0);
   if(f==='text')grow(e.target);
   upd();
 });
@@ -265,6 +267,9 @@ function renderSubs(){
 <input type="number" min="0" max="600" step="0.1" value="${s.start}" data-f="start" aria-label="Start seconds, block ${j+1}">
 <input type="number" min="0" max="600" step="0.1" value="${s.end}" data-f="end" aria-label="End seconds, block ${j+1}">
 <textarea rows="1" data-f="text" placeholder="Subtitle text" aria-label="Text, block ${j+1}">${esc(s.text)}</textarea>
+<input type="color" value="${s.color}" data-f="color" title="Text color" aria-label="Color, block ${j+1}">
+<select data-f="pos" title="Placement" aria-label="Placement, block ${j+1}"><option value="8"${s.pos==='8'?' selected':''}>Top</option><option value="5"${s.pos==='5'?' selected':''}>Middle</option><option value="2"${s.pos==='2'?' selected':''}>Bottom</option></select>
+<input type="number" min="8" max="200" step="2" value="${s.fs||''}" placeholder="${R.fs}" data-f="fs" title="Font size (empty = default)" aria-label="Font size, block ${j+1}">
 <div class="row"><button class="ib" data-act="u" data-id="${s.id}" ${j==0?'disabled':''} title="Move up">▲</button><button class="ib" data-act="n" data-id="${s.id}" ${j==n-1?'disabled':''} title="Move down">▼</button><button class="ib del" data-act="d" data-id="${s.id}" title="Delete block">🗑</button></div></div>`).join('')
   :'<p class="mut">No subtitle blocks yet. Use “Add block” to start.</p>';
   document.querySelectorAll('#subs textarea').forEach(grow);
@@ -275,7 +280,14 @@ function renderSubs(){
 function buildAss(act){
   const font=($('#font').value.trim()||'Noto Sans Devanagari').replace(/,/g,' ');
   let o=`[Script Info]\nScriptType: v4.00+\nPlayResX: ${R.w}\nPlayResY: ${R.h}\nScaledBorderAndShadow: yes\n\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\nStyle: Default,${font},${R.fs},&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,4,2,2,2,${Math.round(R.w*0.037)},${Math.round(R.w*0.037)},${R.mv},1\n\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n`;
-  act.forEach(s=>o+=`Dialogue: 0,${ass(s.start)},${ass(s.end)},Default,,0,0,0,,${s.text.replace(/\r?\n/g,'\\N')}\n`);
+  act.forEach(s=>{
+    let t='';
+    if(s.pos&&s.pos!=='2')t+=`\\an${s.pos}`;
+    if(s.fs>0)t+=`\\fs${Math.round(s.fs)}`;
+    const c=(s.color||'#ffffff').slice(1).toUpperCase();
+    if(c!=='FFFFFF')t+=`\\c&H${c.slice(4,6)}${c.slice(2,4)}${c.slice(0,2)}&`;
+    o+=`Dialogue: 0,${ass(s.start)},${ass(s.end)},Default,,0,0,0,,${t?'{'+t+'}':''}${s.text.replace(/\r?\n/g,'\\N')}\n`;
+  });
   return o;
 }
 function buildCmd(act,sn){
@@ -318,6 +330,7 @@ function upd(){
   let ts=0;
   gantt('#gi',S.imgs.map(m=>{const a=ts;ts+=m.dur;return{s:a,e:ts,txt:f1(m.dur)+'s',tip:`${m.name}: ${f1(a)}s to ${f1(ts)}s`}}),T,'Add images to see their timeline.');
   gantt('#gs',S.subs.map(x=>({s:x.start,e:x.end,txt:x.text.replace(/\\N|\n/g,' '),tip:`${f1(x.start)}s to ${f1(x.end)}s`,bad:x.end<=x.start})),T,'Add blocks to see their timeline.');
+  document.querySelectorAll('#subs input[data-f=fs]').forEach(i=>i.placeholder=R.fs);
   // output
   const act=S.subs.filter(s=>s.text.trim()),sn=subName(),raw=$('#sname').value.trim();
   $('#asspre').textContent=buildAss(act);
