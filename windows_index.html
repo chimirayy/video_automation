@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shorts FFmpeg Studio</title>
+<style>
+:root{--paper:#f2f3f0;--panel:#fff;--ink:#17202a;--mut:#667085;--line:#d8dbd3;--acc:#2f4bff;--acc-s:#e6eaff;--ok:#0f9d6b;--warn:#c77700;--bad:#d92d3a;--r:10px}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 "Avenir Next","Segoe UI Variable","Segoe UI",system-ui,sans-serif}
+.wrap{max-width:1320px;margin:0 auto;padding:48px 20px 80px}
+h1{font-size:clamp(34px,6vw,60px);line-height:1;letter-spacing:-.04em;font-weight:800;margin:0 0 12px}
+.lead{color:var(--mut);max-width:56ch;margin:0 0 40px;font-size:17px}
+section{display:grid;grid-template-columns:72px 1fr;gap:0 20px;padding:32px 0;border-top:1.5px solid var(--ink)}
+.num{font-size:44px;font-weight:800;letter-spacing:-.05em;line-height:1;color:var(--acc)}
+h2{margin:0 0 4px;font-size:22px;letter-spacing:-.02em}
+.sub{margin:0 0 18px;color:var(--mut)}
+.body{min-width:0}
+@media(max-width:640px){section{grid-template-columns:1fr}.num{margin-bottom:8px}}
+label{display:block;font-size:13px;font-weight:600;color:var(--mut)}
+label em{font-style:normal;color:var(--bad);font-weight:600}
+input,textarea{width:100%;margin-top:4px;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font:inherit}
+input:focus,textarea:focus,button:focus-visible,.drop:focus-within{outline:2px solid var(--acc);outline-offset:1px}
+textarea{resize:vertical;min-height:64px}
+.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-bottom:16px}
+.bar>label{flex:1 1 200px}
+.btn{padding:9px 16px;border-radius:8px;border:1px solid var(--ink);background:var(--panel);color:var(--ink);font:inherit;font-weight:600;cursor:pointer}
+.btn:hover:not(:disabled){background:var(--ink);color:#fff}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+.btn.pri:hover:not(:disabled){background:#1f36d6}
+.btn.ghost{border-color:var(--line);color:var(--mut)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.drop{display:flex;flex-direction:column;justify-content:center;gap:2px;padding:12px 18px;border:1.5px dashed var(--mut);border-radius:var(--r);background:var(--panel);cursor:pointer;color:var(--ink);font-size:15px}
+.drop:hover{border-color:var(--acc);background:var(--acc-s)}
+.drop input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.drop small{color:var(--mut);font-weight:400}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:stretch}
+@media(max-width:640px){.r2,.cols{grid-template-columns:1fr!important}}
+.metric strong{display:block;font-size:34px;letter-spacing:-.03em;line-height:1.1}
+.mut{color:var(--mut);font-size:13px}
+.tl{display:flex;height:34px;border-radius:8px;overflow:hidden;margin-bottom:8px;background:var(--line)}
+.tl i{display:flex;align-items:center;justify-content:center;font:700 12px/1 inherit;font-style:normal;color:#fff;min-width:0;overflow:hidden;border-right:2px solid var(--paper)}
+.pill{font-size:14px;font-weight:600;margin-bottom:16px}
+.pill.ok{color:var(--ok)}.pill.warn{color:var(--warn)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.th{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:8px}
+.ph{position:relative;aspect-ratio:3/4;border-radius:6px;overflow:hidden;background:var(--line)}
+.ph img{width:100%;height:100%;object-fit:cover;display:block}
+.idx{position:absolute;top:6px;left:6px;background:var(--ink);color:#fff;font-weight:700;font-size:12px;padding:1px 7px;border-radius:5px}
+.nm{font-size:12px;margin:6px 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sec{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mut)}
+.sec input{margin:0;padding:6px 8px}
+.bd{font-size:12px;font-weight:700;color:var(--acc);margin:6px 0}
+.row{display:flex;gap:4px}
+.ib{flex:1;padding:6px 0;border:1px solid var(--line);background:var(--panel);border-radius:6px;cursor:pointer;font-size:14px;color:var(--ink)}
+.ib:hover:not(:disabled){background:var(--acc-s);border-color:var(--acc)}
+.ib.del:hover:not(:disabled){background:#fde8ea;border-color:var(--bad)}
+.ib:disabled{opacity:.35;cursor:not-allowed}
+.empty{grid-column:1/-1;color:var(--mut);padding:18px 0}
+.cols{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:28px}
+.cols>div{min-width:0}
+.rows{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:14px}
+.rh,.blk{display:grid;grid-template-columns:26px 66px 66px minmax(0,1fr) 36px 78px 56px 94px 96px;gap:8px;align-items:center;padding:5px 8px}
+.rh{background:var(--ink);color:#fff;font-size:12px;font-weight:600;padding:7px 8px}
+.blk{background:var(--panel)}
+.blk:nth-child(even){background:#e9ecf7}
+.blk:hover{background:var(--acc-s)}
+.blk b{font-variant-numeric:tabular-nums;color:var(--mut);text-align:center;font-size:13px}
+.blk input,.blk textarea{margin:0;padding:5px 8px;background:#fff}
+.blk textarea{min-height:0;height:32px;resize:none;overflow:hidden;line-height:1.35}
+.blk.bad input[data-f=end]{border-color:var(--bad);background:#fde8ea}
+.blk input[type=color]{padding:2px;height:32px;cursor:pointer}
+.blk select{margin:0;width:100%;height:32px;padding:0 4px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font:inherit;font-size:13px}
+.mbtn{height:32px;border:1px solid var(--line);border-radius:8px;background:#fff;font:inherit;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink)}
+.mbtn:hover{background:var(--acc-s)}.mbtn.on{border-color:var(--acc);color:var(--acc)}
+.blk .mo{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;padding:6px 0 6px 34px;border-top:1px dashed var(--line)}
+.blk .mo label{flex:1 1 130px;font-size:12px}
+.blk .mo select{margin-top:4px;height:34px}
+.blk .mo .btn{padding:7px 12px;font-size:13px}
+.blk .row{gap:3px}.blk .ib{padding:5px 0}
+.rows p{margin:0;padding:14px 12px}
+@media(max-width:640px){.rh{display:none}.blk{grid-template-columns:30px 1fr 1fr 1fr}.blk textarea{grid-column:1/-1;order:5}.blk input[type=color],.blk select,.blk input[data-f=fs],.blk .mbtn{order:6}.blk .row{order:6;grid-column:1/-1}.blk .mo{order:7;padding-left:0}}
+table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+th{text-align:left;color:var(--mut);font-weight:600;border-bottom:1.5px solid var(--ink);padding:6px 8px 6px 0}
+td{padding:6px 8px 6px 0;border-bottom:1px solid var(--line);vertical-align:top}
+pre{margin:0 0 8px;padding:14px;background:var(--ink);color:#dbe4ff;border-radius:var(--r);overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;max-height:460px}
+.ch{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+details{margin-top:14px}summary{cursor:pointer;color:var(--mut);font-weight:600}
+.ratios{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:24px}
+.rt{display:flex;gap:12px;align-items:center;padding:10px 12px;border:1.5px solid var(--line);border-radius:var(--r);background:var(--panel);cursor:pointer;color:var(--ink);font-size:14px;font-weight:700}
+.rt:hover{border-color:var(--acc)}
+.rt:has(input:checked){border-color:var(--acc);background:var(--acc-s)}
+.rt:focus-within{outline:2px solid var(--acc);outline-offset:1px}
+.rt input{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px}
+.rt .sh{flex:none;width:40px;height:40px;display:flex;align-items:center;justify-content:center}
+.rt .sh i{display:block;border:2px solid var(--ink);border-radius:3px;background:var(--panel)}
+.rt small{display:block;color:var(--mut);font-weight:400;font-size:12px;line-height:1.35}
+.split{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:24px;align-items:start}
+@media(max-width:900px){.split{grid-template-columns:1fr}.panel{position:static!important}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px 12px;position:sticky;top:12px;max-height:80vh;overflow:auto}
+.pt{font-weight:700;font-size:13px;margin-bottom:8px}
+.gantt{padding-right:14px;font-size:11px;font-variant-numeric:tabular-nums}
+.gx{position:relative;height:16px;margin-left:26px;color:var(--mut)}
+.gx span{position:absolute;top:0;transform:translateX(-50%)}.gx span:first-child{transform:none}
+.gr{display:grid;grid-template-columns:26px 1fr;border-top:1px solid var(--line)}
+.gr:last-child{border-bottom:1px solid var(--line)}
+.gl{display:flex;align-items:center;color:var(--mut);font-weight:600}
+.gt{position:relative;height:24px;background-image:linear-gradient(to right,var(--line) 1px,transparent 1px);background-size:var(--g) 100%;border-right:1px solid var(--line)}
+.bx{position:absolute;top:4px;bottom:4px;min-width:3px;border-radius:3px;display:flex;align-items:center;padding:0 5px;overflow:hidden;white-space:nowrap;color:#fff;font-style:normal;font-weight:600}
+.bx.bad{outline:2px solid var(--bad)}
+.gt u{position:absolute;top:0;bottom:0;border-left:2px dashed var(--ink);opacity:.5;text-decoration:none;z-index:1}
+.seg{display:flex;margin-bottom:12px}
+.seg label{flex:1;text-align:center;padding:7px 6px;border:1px solid var(--ink);background:var(--panel);color:var(--ink);font-size:13px;font-weight:600;cursor:pointer}
+.seg label:first-child{border-radius:8px 0 0 8px}.seg label:last-child{border-radius:0 8px 8px 0}.seg label+label{border-left:0}
+.seg input{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px}
+.seg label:has(input:checked){background:var(--ink);color:#fff}
+.seg label:focus-within{outline:2px solid var(--acc);outline-offset:1px}
+.hide{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Shorts FFmpeg Studio</h1>
+<p class="lead">Add your voiceover, order the images, write the subtitles. Pick a video shape for TikTok, YouTube or Instagram, then get a subtitle file and a matching FFmpeg command. Everything runs in your browser; nothing is uploaded.</p>
+
+<section><div class="num">1</div><div class="body">
+<h2>Voiceover</h2><p class="sub">Used to suggest image timings and named in the command.</p>
+<div class="r2">
+<label class="drop"><input type="file" id="audio" accept=".mp3,.wav,audio/*"><b>Choose audio file</b><small>.mp3 or .wav</small></label>
+<div class="metric"><span class="mut">Audio length</span><strong id="adur">0.0s</strong><span class="mut" id="aname">No audio chosen</span></div>
+</div></div></section>
+
+<section><div class="num">2</div><div class="body">
+<h2>Images and timing</h2><p class="sub">Reorder with the arrows, set seconds per image, delete what you don't need.</p>
+<div class="bar">
+<label class="drop"><input type="file" id="imgs" accept="image/png,image/jpeg" multiple><b>Add images</b><small>.jpg, .jpeg, .png</small></label>
+<button class="btn" id="even">Split audio length evenly</button>
+<button class="btn ghost" id="clrimg">Clear all images</button>
+</div>
+<div class="pill hide" id="isum"></div>
+<div class="split"><div class="grid" id="grid"></div><aside class="panel"><div class="pt">Image timeline</div><div id="gi"></div></aside></div>
+</div></section>
+
+<section><div class="num">3</div><div class="body">
+<h2>Subtitles</h2><p class="sub">Each block is one on-screen caption. Blocks share the audio length equally when you add or remove one; edit the times freely after that.</p>
+<div class="bar">
+<button class="btn pri" id="addsub">Add block</button>
+<button class="btn" id="evensub">Split evenly</button>
+<button class="btn ghost" id="clrsub">Clear all blocks</button>
+</div>
+<div class="split"><div class="rows"><div class="rh"><span>#</span><span>Start (s)</span><span>End (s)</span><span>Subtitle text</span><span>Color</span><span>Position</span><span>Size</span><span>Motion</span><span></span></div><div id="subs"></div></div><aside class="panel"><div class="pt">Subtitle timeline</div><div id="gs"></div></aside></div>
+<details><summary>Font settings</summary>
+<div class="bar" style="margin-top:10px">
+<label>Font family<input id="font" value="Noto Sans Devanagari"></label>
+<label>Fonts directory (optional)<input id="fdir" value="../fonts"></label>
+</div>
+<p class="mut" style="margin:0">Windows: download the font (for example Noto Sans Devanagari from Google Fonts) and save its .ttf files in a folder named <b>fonts</b> inside your parent project folder. The default <b>../fonts</b> points to it from any video folder.</p></details>
+
+</div></section>
+
+<section><div class="num">4</div><div class="body">
+<h2>Export</h2><p class="sub">Choose the video shape, name your subtitle file, download it, then run the command in the same folder.</p>
+<div class="mut" style="font-weight:600;margin-bottom:8px">Video aspect ratio</div>
+<div class="ratios" id="ratios" role="radiogroup" aria-label="Video aspect ratio"></div>
+<div class="cols">
+<div>
+<label for="sname">Subtitle file name <em>(required)</em></label>
+<input id="sname" placeholder="for example: my_short_subs" autocomplete="off">
+<p class="mut" id="shint" style="margin:6px 0 14px">Type a name to enable the download.</p>
+<button class="btn pri" id="dl" disabled>Download run.bat + .ass file</button>
+<details><summary>Inspect .ass file</summary><pre id="asspre" style="margin-top:10px"></pre></details>
+</div>
+<div>
+<div class="ch"><b>Terminal command</b><button class="btn" id="cp">Copy command</button></div>
+<pre id="cmd"></pre>
+<span class="mut" id="ctip"></span>
+</div></div>
+</div></section>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const S={imgs:[],subs:[],audio:{name:'',dur:0},id:1};
+const COLORS=['#2f4bff','#0f9d6b','#c77700','#8a3ffc','#d12771','#007d79'];
+const RATIOS=[
+  {k:'9:16',w:1080,h:1920,fs:72,mv:180,name:'Vertical',ex:'TikTok, Instagram Reels, YouTube Shorts'},
+  {k:'16:9',w:1920,h:1080,fs:72,mv:70,name:'Landscape',ex:'Standard YouTube videos, Facebook'},
+  {k:'1:1',w:1080,h:1080,fs:72,mv:90,name:'Square',ex:'Instagram and Facebook feed posts'},
+  {k:'4:5',w:1080,h:1350,fs:72,mv:120,name:'Portrait',ex:'Instagram feed, tall posts'}
+];
+let R=RATIOS[0];
+const ENTER=[['none','None'],['fade','Fade'],['pop','Pop'],['up','Slide up'],['down','Slide down'],['left','From left'],['right','From right'],['zoom','Zoom in'],['type','Typewriter']];
+const STAY=[['none','Still'],['zoom','Slow zoom'],['pulse','Pulse'],['sway','Sway']];
+const LEAVE=[['none','None'],['fade','Fade'],['shrink','Shrink'],['down','Slide down'],['up','Slide up'],['pop','Pop out']];
+const PRESETS={clean:{n:'Clean',v:['fade','none','fade']},punchy:{n:'Punchy',v:['pop','pulse','pop']},cinematic:{n:'Cinematic',v:['zoom','zoom','fade']},social:{n:'Slide and sway',v:['up','sway','down']}};
+const opts=(L,v)=>L.map(([k,t])=>`<option value="${k}"${v===k?' selected':''}>${t}</option>`).join('');
+const presetOf=s=>{const v=[s.enter,s.stay,s.leave].join();const k=Object.keys(PRESETS).find(k=>PRESETS[k].v.join()===v);return k||(v==='none,none,none'?'':'custom')};
+const mo=s=>`<div class="mo"><label>Preset<select data-f="preset"><option value=""${presetOf(s)===''?' selected':''}>Choose a preset…</option>${Object.entries(PRESETS).map(([k,p])=>`<option value="${k}"${presetOf(s)===k?' selected':''}>${p.n}</option>`).join('')}<option value="custom" disabled${presetOf(s)==='custom'?' selected':''}>Custom</option></select></label><label>Text enters<select data-f="enter">${opts(ENTER,s.enter)}</select></label><label>Text stays<select data-f="stay">${opts(STAY,s.stay)}</select></label><label>Text leaves<select data-f="leave">${opts(LEAVE,s.leave)}</select></label><button class="btn" data-act="all" data-id="${s.id}">Apply to all blocks</button></div>`;
+$('#ratios').innerHTML=RATIOS.map((r,i)=>{
+  const s=40,w=r.w>=r.h?s:Math.round(s*r.w/r.h),h=r.h>=r.w?s:Math.round(s*r.h/r.w);
+  return `<label class="rt"><input type="radio" name="ratio" value="${i}" ${i==0?'checked':''}><span class="sh"><i style="width:${w}px;height:${h}px"></i></span><span>${r.k} ${r.name}<small>${r.ex}<br>${r.w}×${r.h}</small></span></label>`;
+}).join('');
+$('#ratios').addEventListener('change',e=>{R=RATIOS[+e.target.value];upd()});
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const f1=n=>(+n).toFixed(1);
+const grow=t=>{t.style.height='auto';t.style.height=Math.max(32,t.scrollHeight+2)+'px'};
+const q=s=>/^[\w@%+=:,./-]+$/.test(s)?s:"'"+s.replace(/'/g,"'\\''")+"'";
+const ass=t=>{const c=Math.round(Math.max(0,+t||0)*100),p=n=>String(n).padStart(2,'0');return `${Math.floor(c/360000)}:${p(Math.floor(c/6000)%60)}:${p(Math.floor(c/100)%60)}.${p(c%100)}`};
+const swap=(a,i,j)=>{[a[i],a[j]]=[a[j],a[i]]};
+const subName=()=>{const v=$('#sname').value.trim().replace(/\.ass$/i,'').replace(/[^\p{L}\p{N}_.\-]+/gu,'_').replace(/^[_.]+|_+$/g,'');return v?v+'.ass':''};
+
+// Audio
+$('#audio').onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
+  S.audio={name:f.name,dur:0,file:f};upd();
+  const a=new Audio(),u=URL.createObjectURL(f);a.preload='metadata';a.src=u;
+  a.onloadedmetadata=()=>{S.audio.dur=Math.round(a.duration*10)/10;URL.revokeObjectURL(u);upd()};
+  a.onerror=()=>{URL.revokeObjectURL(u);upd()};
+};
+
+// Images
+$('#imgs').onchange=e=>{
+  const fs=[...e.target.files];e.target.value='';if(!fs.length)return;
+  const d=S.audio.dur>0?Math.max(Math.round(S.audio.dur/fs.length*10)/10,1):5;
+  fs.forEach(f=>S.imgs.push({id:S.id++,name:f.name,url:URL.createObjectURL(f),dur:d,file:f}));
+  renderImgs();
+};
+$('#clrimg').onclick=()=>{S.imgs.forEach(m=>URL.revokeObjectURL(m.url));S.imgs=[];renderImgs()};
+$('#even').onclick=()=>{
+  const n=S.imgs.length;if(!n||!S.audio.dur)return;
+  const each=Math.max(Math.round(S.audio.dur/n*10)/10,0.5);
+  S.imgs.forEach(m=>m.dur=each);
+  const last=Math.round((S.audio.dur-each*(n-1))*10)/10;
+  if(last>=0.5)S.imgs[n-1].dur=last;
+  renderImgs();
+};
+$('#grid').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  const i=S.imgs.findIndex(m=>m.id==b.dataset.id);if(i<0)return;
+  if(b.dataset.act==='d'){URL.revokeObjectURL(S.imgs[i].url);S.imgs.splice(i,1)}
+  else if(b.dataset.act==='l'&&i>0)swap(S.imgs,i,i-1);
+  else if(b.dataset.act==='r'&&i<S.imgs.length-1)swap(S.imgs,i,i+1);
+  renderImgs();
+});
+$('#grid').addEventListener('input',e=>{
+  const id=e.target.dataset.dur,v=parseFloat(e.target.value);
+  const m=S.imgs.find(x=>x.id==id);if(m&&v>=0.5){m.dur=v;upd()}
+});
+function renderImgs(){
+  const n=S.imgs.length;
+  $('#grid').innerHTML=n?S.imgs.map((m,i)=>`<div class="th"><div class="ph"><img src="${m.url}" alt=""><span class="idx">${i+1}</span></div>
+<div class="nm" title="${esc(m.name)}">${esc(m.name)}</div>
+<label class="sec"><input type="number" min="0.5" max="300" step="0.5" value="${m.dur}" data-dur="${m.id}" aria-label="Seconds for image ${i+1}">sec</label>
+<div class="bd" data-bd="${m.id}"></div>
+<div class="row"><button class="ib" data-act="l" data-id="${m.id}" ${i==0?'disabled':''} title="Move earlier">◀</button><button class="ib del" data-act="d" data-id="${m.id}" title="Delete image">🗑</button><button class="ib" data-act="r" data-id="${m.id}" ${i==n-1?'disabled':''} title="Move later">▶</button></div></div>`).join('')
+  :'<p class="empty">No images yet. Add some to build your timeline.</p>';
+  upd();
+}
+
+// Subtitles
+function splitSubs(){
+  const n=S.subs.length;if(!n)return;
+  const it=S.imgs.reduce((a,m)=>a+m.dur,0),T=Math.min(600,S.audio.dur>0?S.audio.dur:it>0?it:n*5),b=i=>Math.round(T*i/n*10)/10;
+  S.subs.forEach((x,i)=>{x.start=b(i);x.end=b(i+1)});
+}
+const swapTxt=(i,j)=>['text','color','pos','fs','enter','stay','leave'].forEach(k=>{const t=S.subs[i][k];S.subs[i][k]=S.subs[j][k];S.subs[j][k]=t});
+$('#addsub').onclick=()=>{S.subs.push({id:S.id++,start:0,end:0,text:'',color:'#ffffff',pos:'2',fs:0,enter:'none',stay:'none',leave:'none',open:false});splitSubs();renderSubs()};
+$('#evensub').onclick=()=>{splitSubs();renderSubs()};
+$('#clrsub').onclick=()=>{S.subs=[];renderSubs()};
+$('#subs').addEventListener('input',e=>{
+  const b=e.target.closest('.blk'),f=e.target.dataset.f;if(!b||!f)return;
+  const s=S.subs.find(x=>x.id==b.dataset.id);
+  if(f==='preset'){const p=PRESETS[e.target.value];if(p){[s.enter,s.stay,s.leave]=p.v;renderSubs()}return}
+  s[f]=['text','pos','color','enter','stay','leave'].includes(f)?e.target.value:(parseFloat(e.target.value)||0);
+  if(f==='text')grow(e.target);
+  if(f==='enter'||f==='stay'||f==='leave'){const ps=b.querySelector('[data-f=preset]');if(ps)ps.value=presetOf(s)}
+  upd();
+});
+$('#subs').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  const i=S.subs.findIndex(x=>x.id==b.dataset.id);if(i<0)return;
+  if(b.dataset.act==='d'){S.subs.splice(i,1);splitSubs()}
+  else if(b.dataset.act==='m')S.subs[i].open=!S.subs[i].open;
+  else if(b.dataset.act==='all'){const c=S.subs[i];S.subs.forEach(x=>{x.enter=c.enter;x.stay=c.stay;x.leave=c.leave})}
+  else if(b.dataset.act==='u'&&i>0)swapTxt(i,i-1);
+  else if(b.dataset.act==='n'&&i<S.subs.length-1)swapTxt(i,i+1);
+  renderSubs();
+});
+function renderSubs(){
+  const n=S.subs.length;
+  $('#subs').innerHTML=n?S.subs.map((s,j)=>`<div class="blk" data-id="${s.id}" data-hd="${s.id}"><b>${j+1}</b>
+<input type="number" min="0" max="600" step="0.1" value="${s.start}" data-f="start" aria-label="Start seconds, block ${j+1}">
+<input type="number" min="0" max="600" step="0.1" value="${s.end}" data-f="end" aria-label="End seconds, block ${j+1}">
+<textarea rows="1" data-f="text" placeholder="Subtitle text" aria-label="Text, block ${j+1}">${esc(s.text)}</textarea>
+<input type="color" value="${s.color}" data-f="color" title="Text color" aria-label="Color, block ${j+1}">
+<select data-f="pos" title="Placement" aria-label="Placement, block ${j+1}"><option value="8"${s.pos==='8'?' selected':''}>Top</option><option value="5"${s.pos==='5'?' selected':''}>Middle</option><option value="2"${s.pos==='2'?' selected':''}>Bottom</option></select>
+<input type="number" min="8" max="200" step="2" value="${s.fs||''}" placeholder="${R.fs}" data-f="fs" title="Font size (empty = default)" aria-label="Font size, block ${j+1}">
+<button class="mbtn" data-act="m" data-id="${s.id}" aria-expanded="${!!s.open}" title="How the text enters, stays and leaves">Motion ${s.open?'▴':'▾'}</button>
+<div class="row"><button class="ib" data-act="u" data-id="${s.id}" ${j==0?'disabled':''} title="Move up">▲</button><button class="ib" data-act="n" data-id="${s.id}" ${j==n-1?'disabled':''} title="Move down">▼</button><button class="ib del" data-act="d" data-id="${s.id}" title="Delete block">🗑</button></div>${s.open?mo(s):''}</div>`).join('')
+  :'<p class="mut">No subtitle blocks yet. Use “Add block” to start.</p>';
+  document.querySelectorAll('#subs textarea').forEach(grow);
+  upd();
+}
+
+// Output
+function buildAss(act){
+  const font=($('#font').value.trim()||'Noto Sans Devanagari').replace(/,/g,' ');
+  let o=`[Script Info]\nScriptType: v4.00+\nPlayResX: ${R.w}\nPlayResY: ${R.h}\nScaledBorderAndShadow: yes\n\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\nStyle: Default,${font},${R.fs},&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,4,2,2,2,${Math.round(R.w*0.037)},${Math.round(R.w*0.037)},${R.mv},1\n\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n`;
+  const NL=x=>x.replace(/\r?\n/g,'\\N');
+  const add=(a,b,x)=>{if(b-a>0.004)o+=`Dialogue: 0,${ass(a)},${ass(b)},Default,,0,0,0,,${x}\n`};
+  const cyc=(T,P,fn)=>{P=Math.max(P,T/40);const c=Math.max(1,Math.floor(T/P)),p=Math.round(T/c);let r='';for(let k=0;k<c;k++)r+=fn(k*p,p);return r};
+  act.forEach(s=>{
+    const D=Math.max(s.end-s.start,0.1),cx=R.w/2,y=s.pos==='8'?R.mv:s.pos==='5'?R.h/2:R.h-R.mv;
+    let base='';
+    if(s.pos&&s.pos!=='2')base+=`\\an${s.pos}`;
+    if(s.fs>0)base+=`\\fs${Math.round(s.fs)}`;
+    const c=(s.color||'#ffffff').slice(1).toUpperCase();
+    if(c!=='FFFFFF')base+=`\\c&H${c.slice(4,6)}${c.slice(2,4)}${c.slice(0,2)}&`;
+    const blk=t=>(base+t)?`{${base+t}}`:'';
+    const en=s.enter||'none',st=s.stay||'none',lv=s.leave||'none';
+    const tk=s.text.split(/(\s+)/),wi=[];tk.forEach((x,i)=>{if(x.trim())wi.push(i)});
+    const typ=en==='type'&&wi.length>1;
+    let E=en==='none'?0:typ?Math.min(D*0.6,0.3*wi.length):({pop:.28,zoom:.35}[en]||.3);
+    let L=lv==='none'?0:({shrink:.25,pop:.25}[lv]||.3);
+    if(E+L>D*0.8){const k=D*0.8/(E+L);E*=k;L*=k}
+    const em=Math.round(E*1000),lm=Math.round(L*1000),sm=Math.round((D-E-L)*1000),a1=s.start+E,b1=s.end-L;
+    // enter
+    if(typ){
+      const w=E/wi.length;
+      wi.forEach((ix,k)=>{const sh=tk.slice(0,ix+1).join(''),rs=tk.slice(ix+1).join('');add(s.start+k*w,s.start+(k+1)*w,NL(blk('')+sh+(rs?'{\\alpha&HFF&}'+rs:'')))});
+    }else if(E>0){
+      const sl={up:[0,70],down:[0,-70],left:[-120,0],right:[120,0]}[en];
+      let t=sl?`\\move(${cx+sl[0]},${y+sl[1]},${cx},${y},0,${em})`:'';
+      if(en==='pop'){const m=Math.round(em*.54);t+=`\\alpha&HFF&\\fscx60\\fscy60\\t(0,${m},\\alpha&H00&\\fscx112\\fscy112)\\t(${m},${em},\\fscx100\\fscy100)`}
+      else if(en==='zoom')t+=`\\alpha&HFF&\\fscx70\\fscy70\\t(0,${em},\\alpha&H00&\\fscx100\\fscy100)`;
+      else t+=`\\alpha&HFF&\\t(0,${em},\\alpha&H00&)`;
+      add(s.start,a1,NL(blk(t)+s.text));
+    }
+    // stay
+    let t='',endSc=100;
+    if(st==='zoom'){t=`\\t(0,${sm},\\fscx105\\fscy105)`;endSc=105}
+    else if(st==='pulse')t=cyc(sm,1000,(a,p)=>`\\t(${a},${(a+p/2)|0},\\fscx106\\fscy106)\\t(${(a+p/2)|0},${a+p},\\fscx100\\fscy100)`);
+    else if(st==='sway')t=cyc(sm,2400,(a,p)=>`\\t(${a},${(a+p/4)|0},\\frz1.5)\\t(${(a+p/4)|0},${(a+3*p/4)|0},\\frz-1.5)\\t(${(a+3*p/4)|0},${a+p},\\frz0)`);
+    add(a1,b1,NL(blk(t)+s.text));
+    // leave
+    if(L>0){
+      let u=endSc!==100?`\\fscx${endSc}\\fscy${endSc}`:'';
+      const sl={down:70,up:-70}[lv];
+      if(sl!==undefined)u+=`\\move(${cx},${y},${cx},${y+sl},0,${lm})`;
+      if(lv==='shrink')u+=`\\t(0,${lm},\\alpha&HFF&\\fscx60\\fscy60)`;
+      else if(lv==='pop'){const m=Math.round(lm*.4);u+=`\\t(0,${m},\\fscx112\\fscy112)\\t(${m},${lm},\\alpha&HFF&\\fscx50\\fscy50)`}
+      else u+=`\\t(0,${lm},\\alpha&HFF&)`;
+      add(b1,s.end,NL(blk(u)+s.text));
+    }
+  });
+  return o;
+}
+const qw=x=>/^[\w@%+=:,./\\-]+$/.test(x)?x:'"'+x+'"';
+const fdArg=(fd,win)=>{if(win)fd=fd.replace(/\\/g,'/').replace(/:/g,'\\:');return /^[\w\/.\-]+$/.test(fd)?fd:"'"+fd+"'"};
+let PF='cmd';
+function buildCmd(act,sn){
+  const win=PF!=='linux',rem=win?'REM ':'# ';
+  if(!S.imgs.length)return rem+'Add at least one image in step 2 to generate the command.';
+  if(act.length&&!sn)return rem+'Enter a subtitle file name in step 4. The command will include it.';
+  const Q=win?qw:q,cont=PF==='linux'?' \\':PF==='ps'?' `':' ^',nl=win?'':'\n    ';
+  const n=S.imgs.length,au=S.audio.name||'audio.mp3',fd=$('#fdir').value.trim();
+  const L=['ffmpeg -y'];
+  S.imgs.forEach(m=>L.push(`-loop 1 -t ${f1(m.dur)} -i ${Q(m.name)}`));
+  L.push(`-i ${Q(au)}`);
+  const sc=S.imgs.map((_,i)=>`[${i}:v]scale=${R.w}:${R.h}:force_original_aspect_ratio=increase,crop=${R.w}:${R.h},setsar=1,fps=30[v${i}];`).join(nl);
+  const tags=S.imgs.map((_,i)=>`[v${i}]`).join('');
+  const sub=act.length?`,${nl}ass=${sn}${fd?':fontsdir='+fdArg(fd,win):''}[v]`:'[v]';
+  const g=`${sc}${nl}${tags}concat=n=${n}:v=1:a=0${sub}`;
+  L.push(`-filter_complex "${win?g:'\n    '+g+'\n  '}"`);
+  L.push(`-map "[v]" -map ${n}:a`,'-c:v libx264 -preset fast -crf 20 -pix_fmt yuv420p','-c:a aac -b:a 192k -movflags +faststart','-shortest output_final.mp4');
+  return L.join(cont+'\n  ');
+}
+const PK='shortsStudio.v1';
+const persist=()=>{try{localStorage.setItem(PK,JSON.stringify({r:RATIOS.indexOf(R),font:$('#font').value,fdir:$('#fdir').value}))}catch{}};
+function gantt(sel,items,T,empty){
+  const el=$(sel);
+  if(!items.length){el.innerHTML=`<p class="mut" style="margin:0">${empty}</p>`;return}
+  const st=[1,2,5,10,15,20,30,60,120,300].find(x=>T/x<=8)||600;
+  let ticks='';for(let v=0;v<=T+1e-9;v+=st)ticks+=`<span style="left:${v/T*100}%">${v}s</span>`;
+  const au=S.audio.dur>0?`<u style="left:${Math.min(S.audio.dur/T,1)*100}%" title="Audio ends"></u>`:'';
+  el.innerHTML=`<div class="gantt" style="--g:${st/T*100}%"><div class="gx">${ticks}</div>`+items.map((x,i)=>`<div class="gr"><span class="gl">${i+1}</span><div class="gt">${au}<i class="bx${x.bad?' bad':''}" style="left:${x.s/T*100}%;width:${Math.max((x.e-x.s)/T*100,.8)}%;background:${COLORS[i%COLORS.length]}" title="${esc(x.tip)}">${esc(x.txt)}</i></div></div>`).join('')+'</div>';
+}
+function upd(){
+  persist();
+  const ad=S.audio.dur;
+  $('#adur').textContent=f1(ad)+'s';
+  $('#aname').textContent=S.audio.name?(S.audio.name+(ad?'':' (length could not be read)')):'No audio chosen';
+  // images: badges, timeline, summary
+  let t=0;
+  S.imgs.forEach(m=>{const el=document.querySelector(`[data-bd="${m.id}"]`);if(el)el.textContent=`${f1(t)}s → ${f1(t+m.dur)}s`;t+=m.dur});
+  const sm=$('#isum');sm.classList.toggle('hide',!S.imgs.length);
+  const df=Math.round((t-ad)*10)/10;
+  sm.className='pill'+(S.imgs.length?'':' hide')+(ad>0?(Math.abs(df)<=.5?' ok':' warn'):'');
+  sm.textContent=ad>0?(Math.abs(df)<=.5?`Timeline matches the audio: images ${f1(t)}s, audio ${f1(ad)}s.`:`Images ${f1(t)}s, audio ${f1(ad)}s (${df>0?'+':''}${f1(df)}s difference).`):`Images total ${f1(t)}s.`;
+  // subtitle ranges + timetable
+  S.subs.forEach(s=>{
+    const h=document.querySelector(`[data-hd="${s.id}"]`);
+    if(h){h.classList.toggle('bad',s.end<=s.start);h.title=s.end<=s.start?'End must be after start':'';const mb=h.querySelector('[data-act=m]');if(mb)mb.classList.toggle('on',s.enter!=='none'||s.stay!=='none'||s.leave!=='none')}
+  });
+  const subMax=S.subs.reduce((a,x)=>Math.max(a,x.end),0),T=Math.max(ad,t,subMax,1);
+  let ts=0;
+  gantt('#gi',S.imgs.map(m=>{const a=ts;ts+=m.dur;return{s:a,e:ts,txt:f1(m.dur)+'s',tip:`${m.name}: ${f1(a)}s to ${f1(ts)}s`}}),T,'Add images to see their timeline.');
+  gantt('#gs',S.subs.map(x=>({s:x.start,e:x.end,txt:x.text.replace(/\\N|\n/g,' '),tip:`${f1(x.start)}s to ${f1(x.end)}s`,bad:x.end<=x.start})),T,'Add blocks to see their timeline.');
+  document.querySelectorAll('#subs input[data-f=fs]').forEach(i=>i.placeholder=R.fs);
+  // output
+  const act=S.subs.filter(s=>s.text.trim()),sn=subName(),raw=$('#sname').value.trim();
+  $('#asspre').textContent=buildAss(act);
+  const cmd=buildCmd(act,sn);$('#cmd').textContent=cmd;
+  $('#ctip').textContent='Put run.bat and the .ass file in the folder that already has your images and audio, then double-click run.bat. FFmpeg: install it once with winget install Gyan.FFmpeg, or keep one ffmpeg.exe in the parent project folder. run.bat checks for missing files and tells you what to fix.';
+  $('#dl').disabled=!(sn&&act.length&&S.imgs.length);
+  $('#shint').textContent=!sn?'Type a name to enable the download.':!act.length?'Add at least one subtitle block with text to download.':!S.imgs.length?'Add at least one image to download.':`Will be saved as ${sn}`+(sn!==raw&&sn!==raw+'.ass'?' (unsafe characters replaced so FFmpeg can read it)':'');
+}
+function batText(){
+  const act=S.subs.filter(x=>x.text.trim()),sn=subName(),c=buildCmd(act,sn);
+  if(/^(REM|#) /.test(c))return null;
+  const E=x=>x.replace(/%/g,'%%'),au=S.audio.name||'audio.mp3';
+  const need=[...new Set([...S.imgs.map(m=>m.name),au,...(act.length?[sn]:[])])];
+  return ['@echo off','chcp 65001 >nul','cd /d "%~dp0"','set "PATH=%~dp0..;%PATH%"','title Shorts FFmpeg Studio','where ffmpeg >nul 2>nul || goto :noffmpeg',
+    ...need.map(f=>`if not exist "${E(f)}" set "MISSING=${E(f)}" & goto :missing`),
+    'echo Making your video. This can take a few minutes...','echo.',E(c).replace(/\n/g,'\r\n'),'if errorlevel 1 goto :failed',
+    'echo.','echo Done! Your video is saved as output_final.mp4','start "" "output_final.mp4"','pause','exit /b 0',
+    ':noffmpeg','echo FFmpeg was not found. Copy ffmpeg.exe into this folder or install it, then run this file again.','pause','exit /b 1',
+    ':missing','echo Missing file: "%MISSING%"','echo Put it in the same folder as this file, then run this file again.','pause','exit /b 1',
+    ':failed','echo.','echo Something went wrong. Read the messages above for details.','pause','exit /b 1'].join('\r\n')+'\r\n';
+}
+const save=(blob,name)=>{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000)};
+['#font','#fdir','#sname'].forEach(s=>$(s).addEventListener('input',upd));
+$('#dl').onclick=()=>{
+  const act=S.subs.filter(x=>x.text.trim()),sn=subName(),t=batText();
+  if(!sn||!act.length||!t)return;
+  save(new Blob([buildAss(act)],{type:'text/plain;charset=utf-8'}),sn);
+  setTimeout(()=>save(new Blob([t],{type:'text/plain;charset=utf-8'}),'run.bat'),400);
+};
+$('#cp').onclick=async()=>{
+  const b=$('#cp');
+  try{await navigator.clipboard.writeText($('#cmd').textContent);b.textContent='Copied'}catch{b.textContent='Copy failed'}
+  setTimeout(()=>b.textContent='Copy command',1500);
+};
+try{const d=JSON.parse(localStorage.getItem(PK))||{};
+  if(d.r>=0&&d.r<RATIOS.length){R=RATIOS[d.r];document.querySelector(`input[name=ratio][value="${d.r}"]`).checked=true}
+  if(d.font)$('#font').value=d.font;if(typeof d.fdir==='string')$('#fdir').value=d.fdir;
+}catch{}
+renderImgs();renderSubs();
+</script>
+</body>
+</html>
