@@ -8,7 +8,7 @@
 :root{--paper:#f2f3f0;--panel:#fff;--ink:#17202a;--mut:#667085;--line:#d8dbd3;--acc:#2f4bff;--acc-s:#e6eaff;--ok:#0f9d6b;--warn:#c77700;--bad:#d92d3a;--r:10px}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 "Avenir Next","Segoe UI Variable","Segoe UI",system-ui,sans-serif}
-.wrap{max-width:1240px;margin:0 auto;padding:48px 20px 80px}
+.wrap{max-width:1320px;margin:0 auto;padding:48px 20px 80px}
 h1{font-size:clamp(34px,6vw,60px);line-height:1;letter-spacing:-.04em;font-weight:800;margin:0 0 12px}
 .lead{color:var(--mut);max-width:56ch;margin:0 0 40px;font-size:17px}
 section{display:grid;grid-template-columns:72px 1fr;gap:0 20px;padding:32px 0;border-top:1.5px solid var(--ink)}
@@ -59,7 +59,7 @@ textarea{resize:vertical;min-height:64px}
 .empty{grid-column:1/-1;color:var(--mut);padding:18px 0}
 .cols{display:grid;grid-template-columns:3fr 2fr;gap:28px}
 .rows{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:14px}
-.rh,.blk{display:grid;grid-template-columns:26px 70px 70px minmax(0,1fr) 36px 80px 60px 96px;gap:8px;align-items:center;padding:5px 8px}
+.rh,.blk{display:grid;grid-template-columns:26px 66px 66px minmax(0,1fr) 36px 78px 56px 94px 96px;gap:8px;align-items:center;padding:5px 8px}
 .rh{background:var(--ink);color:#fff;font-size:12px;font-weight:600;padding:7px 8px}
 .blk{background:var(--panel)}
 .blk:nth-child(even){background:#e9ecf7}
@@ -70,9 +70,15 @@ textarea{resize:vertical;min-height:64px}
 .blk.bad input[data-f=end]{border-color:var(--bad);background:#fde8ea}
 .blk input[type=color]{padding:2px;height:32px;cursor:pointer}
 .blk select{margin:0;width:100%;height:32px;padding:0 4px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font:inherit;font-size:13px}
+.mbtn{height:32px;border:1px solid var(--line);border-radius:8px;background:#fff;font:inherit;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink)}
+.mbtn:hover{background:var(--acc-s)}.mbtn.on{border-color:var(--acc);color:var(--acc)}
+.blk .mo{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;padding:6px 0 6px 34px;border-top:1px dashed var(--line)}
+.blk .mo label{flex:1 1 130px;font-size:12px}
+.blk .mo select{margin-top:4px;height:34px}
+.blk .mo .btn{padding:7px 12px;font-size:13px}
 .blk .row{gap:3px}.blk .ib{padding:5px 0}
 .rows p{margin:0;padding:14px 12px}
-@media(max-width:640px){.rh{display:none}.blk{grid-template-columns:30px 1fr 1fr 1fr}.blk textarea{grid-column:1/-1;order:5}.blk input[type=color],.blk select,.blk input[data-f=fs],.blk .row{order:6}}
+@media(max-width:640px){.rh{display:none}.blk{grid-template-columns:30px 1fr 1fr 1fr}.blk textarea{grid-column:1/-1;order:5}.blk input[type=color],.blk select,.blk input[data-f=fs],.blk .mbtn{order:6}.blk .row{order:6;grid-column:1/-1}.blk .mo{order:7;padding-left:0}}
 table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
 th{text-align:left;color:var(--mut);font-weight:600;border-bottom:1.5px solid var(--ink);padding:6px 8px 6px 0}
 td{padding:6px 8px 6px 0;border-bottom:1px solid var(--line);vertical-align:top}
@@ -135,7 +141,7 @@ details{margin-top:14px}summary{cursor:pointer;color:var(--mut);font-weight:600}
 <button class="btn" id="evensub">Split evenly</button>
 <button class="btn ghost" id="clrsub">Clear all blocks</button>
 </div>
-<div class="split"><div class="rows"><div class="rh"><span>#</span><span>Start (s)</span><span>End (s)</span><span>Subtitle text</span><span>Color</span><span>Position</span><span>Size</span><span></span></div><div id="subs"></div></div><aside class="panel"><div class="pt">Subtitle timeline</div><div id="gs"></div></aside></div>
+<div class="split"><div class="rows"><div class="rh"><span>#</span><span>Start (s)</span><span>End (s)</span><span>Subtitle text</span><span>Color</span><span>Position</span><span>Size</span><span>Motion</span><span></span></div><div id="subs"></div></div><aside class="panel"><div class="pt">Subtitle timeline</div><div id="gs"></div></aside></div>
 <details><summary>Font settings</summary>
 <div class="bar" style="margin-top:10px">
 <label>Font family<input id="font" value="Noto Sans Devanagari"></label>
@@ -169,12 +175,19 @@ const $=s=>document.querySelector(s);
 const S={imgs:[],subs:[],audio:{name:'',dur:0},id:1};
 const COLORS=['#2f4bff','#0f9d6b','#c77700','#8a3ffc','#d12771','#007d79'];
 const RATIOS=[
-  {k:'9:16',w:1080,h:1920,fs:46,mv:180,name:'Vertical',ex:'TikTok, Instagram Reels, YouTube Shorts'},
-  {k:'16:9',w:1920,h:1080,fs:54,mv:70,name:'Landscape',ex:'Standard YouTube videos, Facebook'},
-  {k:'1:1',w:1080,h:1080,fs:46,mv:90,name:'Square',ex:'Instagram and Facebook feed posts'},
-  {k:'4:5',w:1080,h:1350,fs:46,mv:120,name:'Portrait',ex:'Instagram feed, tall posts'}
+  {k:'9:16',w:1080,h:1920,fs:72,mv:180,name:'Vertical',ex:'TikTok, Instagram Reels, YouTube Shorts'},
+  {k:'16:9',w:1920,h:1080,fs:72,mv:70,name:'Landscape',ex:'Standard YouTube videos, Facebook'},
+  {k:'1:1',w:1080,h:1080,fs:72,mv:90,name:'Square',ex:'Instagram and Facebook feed posts'},
+  {k:'4:5',w:1080,h:1350,fs:72,mv:120,name:'Portrait',ex:'Instagram feed, tall posts'}
 ];
 let R=RATIOS[0];
+const ENTER=[['none','None'],['fade','Fade'],['pop','Pop'],['up','Slide up'],['down','Slide down'],['left','From left'],['right','From right'],['zoom','Zoom in'],['type','Typewriter']];
+const STAY=[['none','Still'],['zoom','Slow zoom'],['pulse','Pulse'],['sway','Sway']];
+const LEAVE=[['none','None'],['fade','Fade'],['shrink','Shrink'],['down','Slide down'],['up','Slide up'],['pop','Pop out']];
+const PRESETS={clean:{n:'Clean',v:['fade','none','fade']},punchy:{n:'Punchy',v:['pop','pulse','pop']},cinematic:{n:'Cinematic',v:['zoom','zoom','fade']},social:{n:'Slide and sway',v:['up','sway','down']}};
+const opts=(L,v)=>L.map(([k,t])=>`<option value="${k}"${v===k?' selected':''}>${t}</option>`).join('');
+const presetOf=s=>{const v=[s.enter,s.stay,s.leave].join();const k=Object.keys(PRESETS).find(k=>PRESETS[k].v.join()===v);return k||(v==='none,none,none'?'':'custom')};
+const mo=s=>`<div class="mo"><label>Preset<select data-f="preset"><option value=""${presetOf(s)===''?' selected':''}>Choose a preset…</option>${Object.entries(PRESETS).map(([k,p])=>`<option value="${k}"${presetOf(s)===k?' selected':''}>${p.n}</option>`).join('')}<option value="custom" disabled${presetOf(s)==='custom'?' selected':''}>Custom</option></select></label><label>Text enters<select data-f="enter">${opts(ENTER,s.enter)}</select></label><label>Text stays<select data-f="stay">${opts(STAY,s.stay)}</select></label><label>Text leaves<select data-f="leave">${opts(LEAVE,s.leave)}</select></label><button class="btn" data-act="all" data-id="${s.id}">Apply to all blocks</button></div>`;
 $('#ratios').innerHTML=RATIOS.map((r,i)=>{
   const s=40,w=r.w>=r.h?s:Math.round(s*r.w/r.h),h=r.h>=r.w?s:Math.round(s*r.h/r.w);
   return `<label class="rt"><input type="radio" name="ratio" value="${i}" ${i==0?'checked':''}><span class="sh"><i style="width:${w}px;height:${h}px"></i></span><span>${r.k} ${r.name}<small>${r.ex}<br>${r.w}×${r.h}</small></span></label>`;
@@ -242,21 +255,25 @@ function splitSubs(){
   const it=S.imgs.reduce((a,m)=>a+m.dur,0),T=Math.min(600,S.audio.dur>0?S.audio.dur:it>0?it:n*5),b=i=>Math.round(T*i/n*10)/10;
   S.subs.forEach((x,i)=>{x.start=b(i);x.end=b(i+1)});
 }
-const swapTxt=(i,j)=>['text','color','pos','fs'].forEach(k=>{const t=S.subs[i][k];S.subs[i][k]=S.subs[j][k];S.subs[j][k]=t});
-$('#addsub').onclick=()=>{S.subs.push({id:S.id++,start:0,end:0,text:'',color:'#ffffff',pos:'2',fs:0});splitSubs();renderSubs()};
+const swapTxt=(i,j)=>['text','color','pos','fs','enter','stay','leave'].forEach(k=>{const t=S.subs[i][k];S.subs[i][k]=S.subs[j][k];S.subs[j][k]=t});
+$('#addsub').onclick=()=>{S.subs.push({id:S.id++,start:0,end:0,text:'',color:'#ffffff',pos:'2',fs:0,enter:'none',stay:'none',leave:'none',open:false});splitSubs();renderSubs()};
 $('#evensub').onclick=()=>{splitSubs();renderSubs()};
 $('#clrsub').onclick=()=>{S.subs=[];renderSubs()};
 $('#subs').addEventListener('input',e=>{
   const b=e.target.closest('.blk'),f=e.target.dataset.f;if(!b||!f)return;
   const s=S.subs.find(x=>x.id==b.dataset.id);
-  s[f]=(f==='text'||f==='pos'||f==='color')?e.target.value:(parseFloat(e.target.value)||0);
+  if(f==='preset'){const p=PRESETS[e.target.value];if(p){[s.enter,s.stay,s.leave]=p.v;renderSubs()}return}
+  s[f]=['text','pos','color','enter','stay','leave'].includes(f)?e.target.value:(parseFloat(e.target.value)||0);
   if(f==='text')grow(e.target);
+  if(f==='enter'||f==='stay'||f==='leave'){const ps=b.querySelector('[data-f=preset]');if(ps)ps.value=presetOf(s)}
   upd();
 });
 $('#subs').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   const i=S.subs.findIndex(x=>x.id==b.dataset.id);if(i<0)return;
   if(b.dataset.act==='d'){S.subs.splice(i,1);splitSubs()}
+  else if(b.dataset.act==='m')S.subs[i].open=!S.subs[i].open;
+  else if(b.dataset.act==='all'){const c=S.subs[i];S.subs.forEach(x=>{x.enter=c.enter;x.stay=c.stay;x.leave=c.leave})}
   else if(b.dataset.act==='u'&&i>0)swapTxt(i,i-1);
   else if(b.dataset.act==='n'&&i<S.subs.length-1)swapTxt(i,i+1);
   renderSubs();
@@ -270,7 +287,8 @@ function renderSubs(){
 <input type="color" value="${s.color}" data-f="color" title="Text color" aria-label="Color, block ${j+1}">
 <select data-f="pos" title="Placement" aria-label="Placement, block ${j+1}"><option value="8"${s.pos==='8'?' selected':''}>Top</option><option value="5"${s.pos==='5'?' selected':''}>Middle</option><option value="2"${s.pos==='2'?' selected':''}>Bottom</option></select>
 <input type="number" min="8" max="200" step="2" value="${s.fs||''}" placeholder="${R.fs}" data-f="fs" title="Font size (empty = default)" aria-label="Font size, block ${j+1}">
-<div class="row"><button class="ib" data-act="u" data-id="${s.id}" ${j==0?'disabled':''} title="Move up">▲</button><button class="ib" data-act="n" data-id="${s.id}" ${j==n-1?'disabled':''} title="Move down">▼</button><button class="ib del" data-act="d" data-id="${s.id}" title="Delete block">🗑</button></div></div>`).join('')
+<button class="mbtn" data-act="m" data-id="${s.id}" aria-expanded="${!!s.open}" title="How the text enters, stays and leaves">Motion ${s.open?'▴':'▾'}</button>
+<div class="row"><button class="ib" data-act="u" data-id="${s.id}" ${j==0?'disabled':''} title="Move up">▲</button><button class="ib" data-act="n" data-id="${s.id}" ${j==n-1?'disabled':''} title="Move down">▼</button><button class="ib del" data-act="d" data-id="${s.id}" title="Delete block">🗑</button></div>${s.open?mo(s):''}</div>`).join('')
   :'<p class="mut">No subtitle blocks yet. Use “Add block” to start.</p>';
   document.querySelectorAll('#subs textarea').forEach(grow);
   upd();
@@ -280,13 +298,52 @@ function renderSubs(){
 function buildAss(act){
   const font=($('#font').value.trim()||'Noto Sans Devanagari').replace(/,/g,' ');
   let o=`[Script Info]\nScriptType: v4.00+\nPlayResX: ${R.w}\nPlayResY: ${R.h}\nScaledBorderAndShadow: yes\n\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\nStyle: Default,${font},${R.fs},&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,4,2,2,2,${Math.round(R.w*0.037)},${Math.round(R.w*0.037)},${R.mv},1\n\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n`;
+  const NL=x=>x.replace(/\r?\n/g,'\\N');
+  const add=(a,b,x)=>{if(b-a>0.004)o+=`Dialogue: 0,${ass(a)},${ass(b)},Default,,0,0,0,,${x}\n`};
+  const cyc=(T,P,fn)=>{P=Math.max(P,T/40);const c=Math.max(1,Math.floor(T/P)),p=Math.round(T/c);let r='';for(let k=0;k<c;k++)r+=fn(k*p,p);return r};
   act.forEach(s=>{
-    let t='';
-    if(s.pos&&s.pos!=='2')t+=`\\an${s.pos}`;
-    if(s.fs>0)t+=`\\fs${Math.round(s.fs)}`;
+    const D=Math.max(s.end-s.start,0.1),cx=R.w/2,y=s.pos==='8'?R.mv:s.pos==='5'?R.h/2:R.h-R.mv;
+    let base='';
+    if(s.pos&&s.pos!=='2')base+=`\\an${s.pos}`;
+    if(s.fs>0)base+=`\\fs${Math.round(s.fs)}`;
     const c=(s.color||'#ffffff').slice(1).toUpperCase();
-    if(c!=='FFFFFF')t+=`\\c&H${c.slice(4,6)}${c.slice(2,4)}${c.slice(0,2)}&`;
-    o+=`Dialogue: 0,${ass(s.start)},${ass(s.end)},Default,,0,0,0,,${t?'{'+t+'}':''}${s.text.replace(/\r?\n/g,'\\N')}\n`;
+    if(c!=='FFFFFF')base+=`\\c&H${c.slice(4,6)}${c.slice(2,4)}${c.slice(0,2)}&`;
+    const blk=t=>(base+t)?`{${base+t}}`:'';
+    const en=s.enter||'none',st=s.stay||'none',lv=s.leave||'none';
+    const tk=s.text.split(/(\s+)/),wi=[];tk.forEach((x,i)=>{if(x.trim())wi.push(i)});
+    const typ=en==='type'&&wi.length>1;
+    let E=en==='none'?0:typ?Math.min(D*0.6,0.3*wi.length):({pop:.28,zoom:.35}[en]||.3);
+    let L=lv==='none'?0:({shrink:.25,pop:.25}[lv]||.3);
+    if(E+L>D*0.8){const k=D*0.8/(E+L);E*=k;L*=k}
+    const em=Math.round(E*1000),lm=Math.round(L*1000),sm=Math.round((D-E-L)*1000),a1=s.start+E,b1=s.end-L;
+    // enter
+    if(typ){
+      const w=E/wi.length;
+      wi.forEach((ix,k)=>{const sh=tk.slice(0,ix+1).join(''),rs=tk.slice(ix+1).join('');add(s.start+k*w,s.start+(k+1)*w,NL(blk('')+sh+(rs?'{\\alpha&HFF&}'+rs:'')))});
+    }else if(E>0){
+      const sl={up:[0,70],down:[0,-70],left:[-120,0],right:[120,0]}[en];
+      let t=sl?`\\move(${cx+sl[0]},${y+sl[1]},${cx},${y},0,${em})`:'';
+      if(en==='pop'){const m=Math.round(em*.54);t+=`\\alpha&HFF&\\fscx60\\fscy60\\t(0,${m},\\alpha&H00&\\fscx112\\fscy112)\\t(${m},${em},\\fscx100\\fscy100)`}
+      else if(en==='zoom')t+=`\\alpha&HFF&\\fscx70\\fscy70\\t(0,${em},\\alpha&H00&\\fscx100\\fscy100)`;
+      else t+=`\\alpha&HFF&\\t(0,${em},\\alpha&H00&)`;
+      add(s.start,a1,NL(blk(t)+s.text));
+    }
+    // stay
+    let t='',endSc=100;
+    if(st==='zoom'){t=`\\t(0,${sm},\\fscx105\\fscy105)`;endSc=105}
+    else if(st==='pulse')t=cyc(sm,1000,(a,p)=>`\\t(${a},${(a+p/2)|0},\\fscx106\\fscy106)\\t(${(a+p/2)|0},${a+p},\\fscx100\\fscy100)`);
+    else if(st==='sway')t=cyc(sm,2400,(a,p)=>`\\t(${a},${(a+p/4)|0},\\frz1.5)\\t(${(a+p/4)|0},${(a+3*p/4)|0},\\frz-1.5)\\t(${(a+3*p/4)|0},${a+p},\\frz0)`);
+    add(a1,b1,NL(blk(t)+s.text));
+    // leave
+    if(L>0){
+      let u=endSc!==100?`\\fscx${endSc}\\fscy${endSc}`:'';
+      const sl={down:70,up:-70}[lv];
+      if(sl!==undefined)u+=`\\move(${cx},${y},${cx},${y+sl},0,${lm})`;
+      if(lv==='shrink')u+=`\\t(0,${lm},\\alpha&HFF&\\fscx60\\fscy60)`;
+      else if(lv==='pop'){const m=Math.round(lm*.4);u+=`\\t(0,${m},\\fscx112\\fscy112)\\t(${m},${lm},\\alpha&HFF&\\fscx50\\fscy50)`}
+      else u+=`\\t(0,${lm},\\alpha&HFF&)`;
+      add(b1,s.end,NL(blk(u)+s.text));
+    }
   });
   return o;
 }
@@ -324,7 +381,7 @@ function upd(){
   // subtitle ranges + timetable
   S.subs.forEach(s=>{
     const h=document.querySelector(`[data-hd="${s.id}"]`);
-    if(h){h.classList.toggle('bad',s.end<=s.start);h.title=s.end<=s.start?'End must be after start':''}
+    if(h){h.classList.toggle('bad',s.end<=s.start);h.title=s.end<=s.start?'End must be after start':'';const mb=h.querySelector('[data-act=m]');if(mb)mb.classList.toggle('on',s.enter!=='none'||s.stay!=='none'||s.leave!=='none')}
   });
   const subMax=S.subs.reduce((a,x)=>Math.max(a,x.end),0),T=Math.max(ad,t,subMax,1);
   let ts=0;
